@@ -2,8 +2,7 @@
 # POI Service
 
 Making an edit to complete challenge#2
-another change on June 8th 2020
-changing again again
+working on challenge#3
 
 ## Overview
 
