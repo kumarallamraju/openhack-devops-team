@@ -2,7 +2,7 @@ name: API-POI CI
 	
 	on:
 	push:
-	branches: [ openhack_refresh ]
+	branches: [ master ]
 	
 	# pull_request:
 	# branches: [ openhack_refresh]
