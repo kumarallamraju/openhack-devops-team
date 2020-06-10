@@ -27,4 +27,4 @@ jobs:
     - name: Install dependencies
       run: npm install --prefix apis/userprofile/
     - name: Run Tests
-      run: npm run test --prefix apis/userprofile/tests/
+      run: npm run test --prefix apis/userprofile/
