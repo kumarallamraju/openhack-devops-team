@@ -8,22 +8,22 @@ env:
   CONTAINER_REGISTRY: docker.pkg.github.com # Container Registry name
 jobs:
   publish:
-    name: Docker Build POI
+    name: Docker Build Trips
     runs-on: ubuntu-latest
     steps:      
     - uses: actions/checkout@master
     - name: Publish to Registry
       uses: elgohr/Publish-Docker-Github-Action@master
       with:
-        name: kumarallamraju/openhack-devops-team/poi
+        name: kumarallamraju/openhack-devops-team/trips
         username: ${{ github.actor }}
         password: ${{ secrets.githubtoken }}
         registry: docker.pkg.github.com
         tags: "latest, ${{ github.run_number }}" 
-        workdir: ./apis/poi/web
+        workdir: ./apis/trips/
   deploy:
     needs: [publish]
-    name: POI App Service Deploy
+    name: Trips App Service Deploy
     
     runs-on: ubuntu-latest
     
@@ -43,6 +43,6 @@ jobs:
       - name: 'Push to Azure App Service'
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'openhackggp0ljh0poi'
-          images: ${{ env.CONTAINER_REGISTRY }}/kumarallamraju/openhack-devops-team/poi:latest
+          app-name: 'openhackggp0ljh0trips'
+          images: ${{ env.CONTAINER_REGISTRY }}/kumarallamraju/openhack-devops-team/trips:latest
           slot-name: 'staging'
