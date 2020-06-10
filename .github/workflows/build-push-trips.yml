@@ -1,4 +1,4 @@
-name: Docker Build POI
+name: Docker Build Trips
 on:
   push:
     branches: [ master ]
