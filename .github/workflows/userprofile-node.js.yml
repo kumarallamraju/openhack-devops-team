@@ -24,5 +24,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm --prefix apis/userprofile install apis/userprofile 
-   # - run: npm --prefix apis/userprofile run test apis/userprofile 
+    - name: Install dependencies
+      run: npm install --prefix apis/userprofile/
+    #- name: Run Tests
+    #  run: npm test --prefix apis/userprofile/
