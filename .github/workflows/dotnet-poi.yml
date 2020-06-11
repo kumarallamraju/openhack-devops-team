@@ -1,4 +1,4 @@
-name: .NET Core
+name: API - .NET POI CI
 
 on:
   push:
@@ -28,3 +28,21 @@ jobs:
     - name: Test
       working-directory: apis/poi/tests/UnitTests
       run: dotnet test --no-restore --verbosity normal
+    - name: failure-check
+      uses: monacorp/action-name@master
+    - name: throw an error
+      run: | 
+          throw 'something failed';
+    - name: My backup step
+      if: ${{ failure() }}
+      uses: actions/heroku@master 
+      with:
+        script: |
+          github.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: 'failure failure..',
+            assignees: [ '${{ github.actor }}' ],
+            body: 'failure happened'
+            })  
+      
