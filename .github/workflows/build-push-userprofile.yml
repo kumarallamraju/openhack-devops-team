@@ -46,3 +46,41 @@ jobs:
           app-name: 'openhackggp0ljh0userprofile'
           images: ${{ env.CONTAINER_REGISTRY }}/kumarallamraju/openhack-devops-team/userprofile:latest
           slot-name: 'staging'
+
+#### the following code checks the health and deploys it to production slot ####
+  test:
+    needs: [deploy]
+    runs-on: windows-latest
+    steps:
+    - name: Test the Staging Slot
+      run: |
+        $R = Invoke-WebRequest -Method Get -URI 'https://openhackggp0ljh0userprofile.azurewebsites.net/api/healthcheck/user'
+        $timestamp = Get-Date
+        $output = ""
+        if ($displayUri) {
+          $output = $output = '{0} | {1} | {2}' -f($timestamp, $R.StatusCode, $Uri)
+          if($R.SatusCode -ne '200'){
+            exit 1
+          }
+        } else {
+
+        $output = '{0} | {1}' -f($timestamp, $R.StatusCode)
+        }
+        Write-Output $output
+        Start-Sleep -Seconds 1
+      shell: powershell
+
+    
+  swap:
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Login via Azure CLI'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Run CLI script
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+             az webapp deployment slot swap  -g openhackggp0ljh0rg -n openhackggp0ljh0userprofile --slot staging --target-slot production
