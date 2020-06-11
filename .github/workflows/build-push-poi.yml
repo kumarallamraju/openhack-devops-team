@@ -2,8 +2,11 @@ name: Docker Build POI
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    paths:
+      - 'apis/poi/**'
+      - '.github/workflows/build-push-poi.yml'
+  #pull_request:
+    #branches: [ master ]
 env:
   CONTAINER_REGISTRY: docker.pkg.github.com # Container Registry name
 jobs:
