@@ -2,8 +2,11 @@ name: Docker Build Trips
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    paths:
+      - 'apis/trips/**'
+      - '.github/workflows/build-push-trips.yml'
+  #pull_request:
+    #branches: [ master ]
 env:
   CONTAINER_REGISTRY: docker.pkg.github.com # Container Registry name
 jobs:
