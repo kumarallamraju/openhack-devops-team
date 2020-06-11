@@ -30,8 +30,7 @@ jobs:
       run: dotnet test --no-restore --verbosity normal
     - name: failure-check
       uses: monacorp/action-name@master
-    - name: throw an error
-      run: | 
+        run:| 
           throw 'something failed';
     - name: My backup step
       if: ${{ failure() }}
