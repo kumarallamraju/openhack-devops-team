@@ -25,4 +25,4 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm --prefix apis/userprofile install apis/userprofile 
-    - run: npm --prefix apis/userprofile run test apis/userprofile 
+   # - run: npm --prefix apis/userprofile run test apis/userprofile 
