@@ -37,6 +37,5 @@ jobs:
         token: ${{ secrets.GITHUBTOKEN }}
         title:  "Workflow ${{github.workflow}} | Job Status ${{job.status}}"
         body:  "Error ${{toJSON(github.event)}}"
-        Labels: error
         assignees: |
          kumarallamraju
