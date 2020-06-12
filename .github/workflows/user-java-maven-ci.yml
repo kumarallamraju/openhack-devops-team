@@ -1,5 +1,5 @@
 # This workflow will build a Java project with Maven
-name: User-Java-CI
+name: User-Java CI
 on:
   push:
     paths: 
@@ -24,3 +24,13 @@ jobs:
       run: mvn clean install -f ./apis/user-java/
     - name: Run Test
       run: mvn test -f ./apis/user-java
+
+    - name: The job has failed 
+      uses: alialaa/issue-action@v1
+      if: failure()
+      with:
+        token: ${{ secrets.GITHUBTOKEN }}
+        title:  "Workflow ${{github.workflow}} | Job Status ${{job.status}}"
+        body:  "Error ${{toJSON(github.event)}}"
+        assignees: |
+         kumarallamraju
