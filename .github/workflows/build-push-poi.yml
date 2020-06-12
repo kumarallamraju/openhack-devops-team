@@ -97,5 +97,5 @@ jobs:
               repo: context.repo.repo,
               title: 'Approve POI Deploy to Production',
               assignees: [ '${{ github.actor }}' ],
-              body: 'Workflow failed to commit ${{github.sha}}'
+              body: 'Workflow failed to commit'
               })  
