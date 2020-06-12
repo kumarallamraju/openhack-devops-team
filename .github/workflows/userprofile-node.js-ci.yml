@@ -35,8 +35,8 @@ jobs:
       if: failure()
       with:
         token: ${{ secrets.GITHUBTOKEN }}
-        title: echo "Workflow ${{github.workflow}} | Job Status ${{job.status}}"
-        body: echo "Error ${{toJSON(github.event)}}"
-        Lables: error
+        title:  "Workflow ${{github.workflow}} | Job Status ${{job.status}}"
+        body:  "Error ${{toJSON(github.event)}}"
+        Labels: error
         assignees: |
          kumarallamraju
