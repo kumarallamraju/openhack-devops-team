@@ -1,4 +1,4 @@
-name: API-Trips CI    
+name: Trips CI    
 on:
   push:
     paths: 
@@ -35,3 +35,13 @@ jobs:
     - name: Test
       working-directory: apis/trips/tests
       run: go test -v .
+      
+    - name: The job has failed 
+      uses: alialaa/issue-action@v1
+      if: failure()
+      with:
+        token: ${{ secrets.GITHUBTOKEN }}
+        title:  "Workflow ${{github.workflow}} | Job Status ${{job.status}}"
+        body:  "Error ${{toJSON(github.event)}}"
+        assignees: |
+         kumarallamraju
