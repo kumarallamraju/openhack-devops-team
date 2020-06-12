@@ -34,7 +34,7 @@ jobs:
       uses: alialaa/issue-action@v1
       if: failure()
       with:
-        token: ${{ secrets.GITTOKEN }}
+        token: ${{ secrets.GITHUBTOKEN }}
         title: echo "Workflow ${{github.workflow}} | Job Status ${{job.status}}"
         body: echo "Error ${{toJSON(github.event)}}"
         Lables: error
