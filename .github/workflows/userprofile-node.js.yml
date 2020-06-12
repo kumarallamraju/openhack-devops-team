@@ -26,5 +26,17 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Install dependencies
       run: npm install --prefix apis/userprofile/
-    #- name: Run Tests
-    #  run: npm test --prefix apis/userprofile/
+    - name: Run Tests
+      run: npm test --prefix apis/userprofile/
+  #- name: The job has failed
+    #  run: exit 1
+    - name: The job has failed 
+      uses: alialaa/issue-action@v1
+      if: failure()
+      with:
+        token: ${{ secrets.GITTOKEN }}
+        title: echo "Workflow ${{github.workflow}} | Job Status ${{job.status}}"
+        body: echo "Error ${{toJSON(github.event)}}"
+        Lables: error
+        assignees: |
+         kumarallamraju
