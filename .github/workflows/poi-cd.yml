@@ -1,4 +1,4 @@
-name:  POI CD # aa
+name:  POI CD 
 on:
   push:
     branches: [ master ]
@@ -73,7 +73,22 @@ jobs:
         Start-Sleep -Seconds 1
       shell: powershell
 
+##### the following rollbacks the release in case of a build failure #####
+    - name: Rollback Release
+      if: failure()
+      uses: author/action-rollback@stable
+      with:
+        # Using a known release ID
+        id: ${{ steps.create_release.id }}
+        # Using a tag name
+        tag: 'v1.0.1'
+        # Always delete the tag, even if a release is not associated with it.
+        always_delete_tag: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
     
+  
+  ##### the following swaps the release slots from staging to production #####
   swap:
     needs: [test]
     runs-on: ubuntu-latest
@@ -88,14 +103,6 @@ jobs:
           inlineScript: |
              az webapp deployment slot swap  -g openhackggp0ljh0rg -n openhackggp0ljh0poi --slot staging --target-slot production
 
-      - name: Create Issue
-        uses: actions/github-script@0.9.0
-        with:
-          script: |
-            github.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: 'Approve POI Deploy to Production',
-              assignees: [ '${{ github.actor }}' ],
-              body: 'Workflow failed to commit'
-              })  
+
+              
+                
