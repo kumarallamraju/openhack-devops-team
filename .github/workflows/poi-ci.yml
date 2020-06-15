@@ -1,17 +1,17 @@
 name: POI CI
 
 on:
-  push:
-    branches: [ master ]
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
+      - release
     paths:
-      - '/apis/poi/**'
+      - 'apis/poi/**'
 
 jobs:
   build:
 
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -20,23 +20,8 @@ jobs:
       with:
         dotnet-version: 3.1.101
     - name: Install dependencies
-      working-directory: apis/poi
-      run: dotnet restore
+      run: dotnet restore apis/poi/poi.sln
     - name: Build
-      working-directory: apis/poi
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build apis/poi/poi.sln --no-restore
     - name: Test
-      working-directory: apis/poi/tests/UnitTests
-      run: dotnet test --no-restore --verbosity normal
-      
-    - name: The job has failed 
-      uses: alialaa/issue-action@v1
-      if: failure()
-      with:
-        token: ${{ secrets.GITHUBTOKEN }}
-        title:  "Workflow ${{github.workflow}} | Job Status ${{job.status}}"
-        body:  "Error ${{toJSON(github.event)}}"
-        assignees: |
-         kumarallamraju
-
-      
+      run: dotnet test apis/poi/tests/UnitTests/UnitTests.csproj --no-restore 
