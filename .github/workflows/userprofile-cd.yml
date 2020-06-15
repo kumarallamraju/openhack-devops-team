@@ -1,48 +1,51 @@
+# This is a basic workflow to help you get started with Actions xx
+
 name: USERPROFILE CD
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
-env:
-  CONTAINER_REGISTRY: docker.pkg.github.com # Container Registry name
+    paths:
+      - 'apis/userprofile/**'
+      - '.github/workflows/userprofile-cd.yml'
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  publish:
-    name: Docker Build USERPROFILE
-    runs-on: ubuntu-latest
-    steps:      
-    - uses: actions/checkout@master
-    - name: Publish to Registry
-      uses: elgohr/Publish-Docker-Github-Action@master
-      with:
-        name: kumarallamraju/openhack-devops-team/userprofile
-        username: ${{ github.actor }}
-        password: ${{ secrets.githubtoken }}
-        registry: docker.pkg.github.com
-        tags: "latest, ${{ github.run_number }}" 
-        workdir: ./apis/userprofile
+  # This workflow contains a single job called "build"
   deploy:
-    needs: [publish]
-    name: USERPROFILE App Service Deploy
-    
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: 'Login via Azure CLI'
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      
-      - name: 'Login via Docker to GH'
-        uses: azure/docker-login@v1
-        with:
-          login-server: docker.pkg.github.com
-          username: ${{ github.actor }}
-          password: ${{ secrets.githubtoken }}
-    
-      - name: 'Push to Azure App Service'
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'openhackggp0ljh0userprofile'
-          images: ${{ env.CONTAINER_REGISTRY }}/kumarallamraju/openhack-devops-team/userprofile:latest
-          slot-name: 'staging'
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+    - name: Docker Login
+      uses: Azure/docker-login@v1
+      with:
+        # Container registry username
+        username: openhackggp0ljh0acr
+        # Container registry password
+        password: ${{ secrets.ACR_KEY }}
+        # Container registry server url
+        login-server: openhackggp0ljh0acr.azurecr.io
+    # Runs a single command using the runners shell
+    - name: Build Docker Container
+      run: docker build apis/userprofile -t openhackggp0ljh0acr.azurecr.io/devopsoh/api-userprofile:${{ github.run_number }}
+    # Runs a set of commands using the runners shell
+    - name: Push to ACR
+      run: docker push openhackggp0ljh0acr.azurecr.io/devopsoh/api-userprofile:${{ github.run_number }}
+    - name: Azure Login
+      uses: Azure/login@v1.1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Deploy to Azure Web App staging slot
+      uses: Azure/webapps-deploy@v2
+      with:
+        app-name: openhackggp0ljh0userprofile
+        slot-name: staging
+        images: openhackggp0ljh0acr.azurecr.io/devopsoh/api-userprofile:${{ github.run_number }}
+    - name: Azure Logout
+      run: az logout
