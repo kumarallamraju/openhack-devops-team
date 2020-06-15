@@ -8,7 +8,7 @@ on:
   push:
     branches: [ master ]
     paths:
-      - 'apis/trips/**'
+      - 'apis/user-java/**'
       - '.github/workflows/user-java-cd.yml'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
