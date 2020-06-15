@@ -1,47 +1,32 @@
-name: Trips CI    
+# basic Go workflow
+
+name: Trips CI
+
 on:
-  push:
-    paths: 
-      - 'api/trips/**'
-      - '.github/**'
   pull_request:
-    branches: [ master ]
-    paths: 
-      - 'api/trips/**'
-      - '.github/**'
+    branches:
+    - master
+    - release
+    paths:
+    - 'apis/trips/**'
+
 jobs:
   build:
-    name: Trips Go Build & Test
-    runs-on: ubuntu-latest
+
+    runs-on: ubuntu-latest    
+
     steps:
-    - name: Set up Go 1.x
-      uses: actions/setup-go@v2
-      with:
-        go-version: ^1.13
-      id: go
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v2
-    - name: Get dependencies
-      working-directory: apis/trips
-      run: |
-        go get -v -t -d ./...
-        if [ -f Gopkg.toml ]; then
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-            dep ensure
-        fi
-    - name: Build
-      working-directory: apis/trips
-      run: go build -v .
-    - name: Test
-      working-directory: apis/trips/tests
-      run: go test -v .
-      
-    - name: The job has failed 
-      uses: alialaa/issue-action@v1
-      if: failure()
-      with:
-        token: ${{ secrets.GITHUBTOKEN }}
-        title:  "Workflow ${{github.workflow}} | Job Status ${{job.status}}"
-        body:  "Error ${{toJSON(github.event)}}"
-        assignees: |
-         kumarallamraju
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.13'
+      - name: Build
+        run: go build -v
+        working-directory: apis/trips
+      - name: Test
+        run: go test ./tests
+        working-directory: apis/trips
+        
+        
