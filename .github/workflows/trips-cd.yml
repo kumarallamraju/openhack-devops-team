@@ -1,89 +1,70 @@
-name: Trips CD
+# This is a basic workflow to help you get started with Actions xx
+
+name: TRIPS CD
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
 on:
   push:
     branches: [ master ]
     paths:
       - 'apis/trips/**'
-      - '.github/workflows/build-push-trips.yml'
-  #pull_request:
-    #branches: [ master ]
-env:
-  CONTAINER_REGISTRY: docker.pkg.github.com # Container Registry name
+      - '.github/workflows/trips-cd.yml'
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  publish:
-    name: Docker Build Trips
-    runs-on: ubuntu-latest
-    steps:      
-    - uses: actions/checkout@master
-    - name: Publish to Registry
-      uses: elgohr/Publish-Docker-Github-Action@master
-      with:
-        name: kumarallamraju/openhack-devops-team/trips
-        username: ${{ github.actor }}
-        password: ${{ secrets.githubtoken }}
-        registry: docker.pkg.github.com
-        tags: "latest, ${{ github.run_number }}" 
-        workdir: ./apis/trips
+  # This workflow contains a single job called "build"
   deploy:
-    needs: [publish]
-    name: Trips App Service Deploy
-    
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    
-    steps:
-      - name: 'Login via Azure CLI'
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      
-      - name: 'Login via Docker to GH'
-        uses: azure/docker-login@v1
-        with:
-          login-server: docker.pkg.github.com
-          username: ${{ github.actor }}
-          password: ${{ secrets.githubtoken }}
-    
-      - name: 'Push to Azure App Service'
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'openhackggp0ljh0trips'
-          images: ${{ env.CONTAINER_REGISTRY }}/kumarallamraju/openhack-devops-team/trips:latest
-          slot-name: 'staging'
-          
-#### the following code checks the health and deploys it to production slot ####
-  test:
-    needs: [deploy]
-    runs-on: windows-latest
-    steps:
-    - name: Test the Staging Slot
-      run: |
-        $R = Invoke-WebRequest -Method Get -URI 'https://openhackggp0ljh0trips-staging.azurewebsites.net/api/healthcheck/trips'
-        $timestamp = Get-Date
-        $output = ""
-        if ($displayUri) {
-          $output = $output = '{0} | {1} | {2}' -f($timestamp, $R.StatusCode, $Uri)
-          if($R.SatusCode -ne '200'){
-            exit 1
-          }
-        } else {
 
-        $output = '{0} | {1}' -f($timestamp, $R.StatusCode)
-        }
-        Write-Output $output
-        Start-Sleep -Seconds 1
-      shell: powershell
-
-    
-  swap:
-    needs: [test]
-    runs-on: ubuntu-latest
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: 'Login via Azure CLI'
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - name: Run CLI script
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-             az webapp deployment slot swap  -g openhackggp0ljh0rg -n openhackggp0ljh0trips --slot staging --target-slot production
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+    - name: Docker Login
+      uses: Azure/docker-login@v1
+      with:
+        # Container registry username
+        username: openhackggp0ljh0acr
+        # Container registry password
+        password: ${{ secrets.ACR_KEY }}
+        # Container registry server url
+        login-server: openhackggp0ljh0acr.azurecr.io
+    # Runs a single command using the runners shell
+    - name: Build Docker Container
+      run: docker build apis/trips -t openhackggp0ljh0acr.azurecr.io/devopsoh/api-trips:${{ github.run_number }}
+    # Runs a set of commands using the runners shell
+    - name: Push to ACR
+      run: docker push openhackggp0ljh0acr.azurecr.io/devopsoh/api-trips:${{ github.run_number }}
+    - name: Azure Login
+      uses: Azure/login@v1.1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Deploy to Azure Web App staging slot
+      uses: Azure/webapps-deploy@v2
+      with:
+        app-name: openhackggp0ljh0trips
+        slot-name: staging
+        images: openhackggp0ljh0acr.azurecr.io/devopsoh/api-trips:${{ github.run_number }}
+    - name: Get versions in prod / staging
+      uses: azure/CLI@v1
+      with:
+        inlineScript: |
+          staging=`az webapp config container show -n openhackggp0ljh0trips --slot staging -g openhackggp0ljh0rg | grep openhackggp0ljh0acr.azurecr.io/devopsoh/api-trips | awk '{print $2}'`
+          prod=`az webapp config container show -n openhackggp0ljh0trips -g openhackggp0ljh0rg | grep openhackggp0ljh0acr.azurecr.io/devopsoh/api-trips | awk '{print $2}'`
+          echo ::set-env name=staging-version::$staging
+          echo ::set-env name=prod-version::$prod
+    - name: Create Issue
+      uses: actions/github-script@0.9.0
+      with:
+        script: |
+          github.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: 'Approve TRIPS Deploy to Production',
+            assignees: [ '${{ github.actor }}' ],
+            body: 'Please perform the following:<br><br>* navigate to [the API\'s swagger endpoint](https://openhackggp0ljh0trips-staging.azurewebsites.net/api/docs/poi/index.html)<br>* if everything looks good, comment `/approve` to deploy to production<br><br>Current version in prod: ${{ env.prod-version }}<br><br>Version in staging: ${{ env.staging-version }}'
+            })  
+    - name: Azure Logout
+      run: az logout
