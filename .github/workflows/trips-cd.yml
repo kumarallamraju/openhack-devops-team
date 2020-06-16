@@ -48,7 +48,7 @@ jobs:
         slot-name: staging
         images: openhackggp0ljh0acr.azurecr.io/devopsoh/api-trips:${{ github.run_number }}
   
-#### the following code checks the health and deploys it to production slot ####
+#### the following code checks the health of staging slot before deploying the release to production slot ####
   test:
     needs: [deploy]
     runs-on: windows-latest
@@ -70,7 +70,7 @@ jobs:
         Start-Sleep -Seconds 1
       shell: powershell
 
-##### the following rollbacks the release in case of a build failure #####
+##### the following rollbacks the release in case the staging slot is unhealthy #####
     - name: Rollback Release
       if: failure()
       uses: author/action-rollback@stable
@@ -104,7 +104,7 @@ jobs:
             github.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: 'Approve TRIPS Deploy to Production',
+              title: ' Manually approve the TRIPS Deployment before pushing to production',
               assignees: [ '${{ github.actor }}' ],
               body: 'Please perform the following:<br><br>* navigate to [the API\'s swagger endpoint](https://openhackggp0ljh0trips-staging.azurewebsites.net/api/docs/trips/index.html)<br>* if everything looks good, comment `/approve` to deploy to production<br><br>Current version in prod: ${{ env.prod-version }}<br><br>Version in staging: ${{ env.staging-version }}'
               })  
