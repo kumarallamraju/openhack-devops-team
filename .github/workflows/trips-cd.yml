@@ -111,11 +111,11 @@ jobs:
           # TODO Check for approve action for above step  before running the below swap action: 
 
       - name: 'Login via Azure CLI'
-        uses: azure/login@v1.1
+        uses: Azure/login@v1.1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
       - name: Run CLI script
-        uses: azure/CLI@v1.1
+        uses: Azure/CLI@v1
         with:
           inlineScript: |
                    az webapp deployment slot swap  -g openhackggp0ljh0rg -n openhackggp0ljh0trips --slot staging --target-slot production
