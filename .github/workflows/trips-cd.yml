@@ -90,7 +90,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get versions in prod / staging
-        uses: azure/CLI@v1
+        uses: Azure/CLI@v1
         with:
           inlineScript: |
             staging=`az webapp config container show -n openhackggp0ljh0trips --slot staging -g openhackggp0ljh0rg | grep openhackggp0ljh0acr.azurecr.io/devopsoh/api-trips | awk '{print $2}'`
