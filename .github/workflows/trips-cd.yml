@@ -47,24 +47,77 @@ jobs:
         app-name: openhackggp0ljh0trips
         slot-name: staging
         images: openhackggp0ljh0acr.azurecr.io/devopsoh/api-trips:${{ github.run_number }}
-    - name: Get versions in prod / staging
-      uses: azure/CLI@v1
+  
+#### the following code checks the health and deploys it to production slot ####
+  test:
+    needs: [deploy]
+    runs-on: windows-latest
+    steps:
+    - name: Test the Staging Slot
+      run: |
+        $R = Invoke-WebRequest -Method Get -URI 'https://openhackggp0ljh0trips-staging.azurewebsites.net/api/healthcheck/trips'
+        $timestamp = Get-Date
+        $output = ""
+       
+        $output = '{0} | {1} | {2}' -f($timestamp, $R.StatusCode, $Uri)
+        if($R.StatusCode -ne '200'){
+            exit 1
+        
+        } else {
+        $output = '{0} | {1}' -f($timestamp, $R.StatusCode)
+        }
+        Write-Output $output
+        Start-Sleep -Seconds 1
+      shell: powershell
+
+##### the following rollbacks the release in case of a build failure #####
+    - name: Rollback Release
+      if: failure()
+      uses: author/action-rollback@stable
       with:
-        inlineScript: |
-          staging=`az webapp config container show -n openhackggp0ljh0trips --slot staging -g openhackggp0ljh0rg | grep openhackggp0ljh0acr.azurecr.io/devopsoh/api-trips | awk '{print $2}'`
-          prod=`az webapp config container show -n openhackggp0ljh0trips -g openhackggp0ljh0rg | grep openhackggp0ljh0acr.azurecr.io/devopsoh/api-trips | awk '{print $2}'`
-          echo ::set-env name=staging-version::$staging
-          echo ::set-env name=prod-version::$prod
-    - name: Create Issue
-      uses: actions/github-script@0.9.0
-      with:
-        script: |
-          github.issues.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: 'Approve TRIPS Deploy to Production',
-            assignees: [ '${{ github.actor }}' ],
-            body: 'Please perform the following:<br><br>* navigate to [the API\'s swagger endpoint](https://openhackggp0ljh0trips-staging.azurewebsites.net/api/docs/poi/index.html)<br>* if everything looks good, comment `/approve` to deploy to production<br><br>Current version in prod: ${{ env.prod-version }}<br><br>Version in staging: ${{ env.staging-version }}'
-            })  
-    - name: Azure Logout
-      run: az logout
+        # Using a known release ID
+        id: ${{ steps.create_release.id }}
+        # Using a tag name
+        tag: 'v1.0.1'
+        # Always delete the tag, even if a release is not associated with it.
+        always_delete_tag: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
+    
+#----
+  swap:
+    needs : [test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get versions in prod / staging
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            staging=`az webapp config container show -n openhackggp0ljh0trips --slot staging -g openhackggp0ljh0rg | grep openhackggp0ljh0acr.azurecr.io/devopsoh/api-trips | awk '{print $2}'`
+            prod=`az webapp config container show -n openhackggp0ljh0trips -g openhackggp0ljh0rg | grep openhackggp0ljh0acr.azurecr.io/devopsoh/api-trips | awk '{print $2}'`
+            echo ::set-env name=staging-version::$staging
+            echo ::set-env name=prod-version::$prod
+      - name: Create Issue
+        uses: actions/github-script@0.9.0
+        with:
+          script: |
+            github.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Approve TRIPS Deploy to Production',
+              assignees: [ '${{ github.actor }}' ],
+              body: 'Please perform the following:<br><br>* navigate to [the API\'s swagger endpoint](https://openhackggp0ljh0trips-staging.azurewebsites.net/api/docs/trips/index.html)<br>* if everything looks good, comment `/approve` to deploy to production<br><br>Current version in prod: ${{ env.prod-version }}<br><br>Version in staging: ${{ env.staging-version }}'
+              })  
+          # TODO Check for approve action for above step  before running the below swap action: 
+
+      - name: 'Login via Azure CLI'
+        uses: azure/login@v1.1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Run CLI script
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+                   az webapp deployment slot swap  -g openhackggp0ljh0rg -n openhackggp0ljh0trips --slot staging --target-slot production
+      - name: Azure Logout
+        run: az logout
