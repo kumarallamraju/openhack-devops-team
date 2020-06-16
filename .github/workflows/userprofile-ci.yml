@@ -28,3 +28,14 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: npm --prefix apis/userprofile install apis/userprofile 
     - run: npm --prefix apis/userprofile run test apis/userprofile 
+      
+    - name: 'Build Failure'
+      uses: alialaa/issue-action@v1
+      if: failure()
+      with:
+        token: ${{ secrets.GITHUBTOKEN }}
+        title:  "Workflow ${{github.workflow}} | Job Status ${{job.status}}"
+        body:  "Error ${{toJSON(github.event)}}"
+        assignees: |
+         kumarallamraju
+
