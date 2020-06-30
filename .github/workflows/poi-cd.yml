@@ -72,6 +72,19 @@ jobs:
         Start-Sleep -Seconds 1
       shell: powershell
 
+##### the following creates an issue if the staging slot is unhealthy #####
+    - name: File an issue if healthcheck fails
+      if: failure()
+      uses: actions/github-script@0.9.0
+      with:
+        script: |
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: 'Pls review, POI health check failed'
+          })
+
 #Create a new issue
   NewIssue:
     needs: [test]
