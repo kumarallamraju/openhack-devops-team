@@ -31,15 +31,17 @@ jobs:
     - name: Test
       run: dotnet test apis/poi/tests/UnitTests/UnitTests.csproj --no-restore 
     
-##### the following creates an issue if the staging slot is unhealthy #####
+##### the following creates an issue if the POI build fails #####
     - name: File an issue if the build fails
       if: failure()
       uses: actions/github-script@0.9.0
       with:
         script: |
-          github.issues.createComment({
-            #issue_number: context.issue.number,
+          github.issues.create({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: 'Pls review, POI build failed'
-          })
+            title: 'POI Build Failed',
+            assignees: [ '${{ github.actor }}' ],
+            body: 'POI Build Failed, Pls fix the code'
+            })  
+ 
