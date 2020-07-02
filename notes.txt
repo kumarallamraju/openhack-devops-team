@@ -1,0 +1,13 @@
+
+- POI-CI.yml
+- make a code change
+- Create a new branch for this commit and start a pull request
+- wait for the build to be completed
+- Merge the commit
+- This invokes poi-cd.yml
+
+==
+To introduce a build failure
+
+- make a code change api/poi/...
+- repeat from #4 to #7
