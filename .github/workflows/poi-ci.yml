@@ -2,11 +2,10 @@ name: POI CI
 
 on:
   pull_request:
-    branches:
-      - master
-      - release
+    branches: [ master ]
     paths:
       - 'apis/poi/**'
+      - '.github/workflows/poi-ci.yml'
 
 jobs:
   build:
