@@ -5,7 +5,7 @@ on:
 name: Deploy POI to Production
 
 jobs:
-  Deploy to Prod:
+  Deploy-to-Prod:
     runs-on: ubuntu-latest
     if: startsWith(github.event.issue.title, 'Approve POI Deploy to Production') && startsWith(github.event.comment.body, '/approve')
     steps:
