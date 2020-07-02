@@ -2,6 +2,7 @@
 - POI-CI.yml
 - make a code change
 - Create a new branch for this commit and start a pull request
+- Create a pull request
 - wait for the build to be completed
 - Merge the commit
 - This invokes poi-cd.yml
