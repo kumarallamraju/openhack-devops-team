@@ -1,4 +1,8 @@
 
+7.2.20
+We checked for a build failure in the CI itself and filed an issue in the CI cycle.
+This way we avoided creating an issue after pushing the failed docker image(build failures) to staging slo,t
+
 - POI-CI.yml
 - make a code change
 - Create a new branch for this commit and start a pull request
