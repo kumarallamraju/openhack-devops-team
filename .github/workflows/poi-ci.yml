@@ -6,11 +6,11 @@ on:
     paths:
       - 'apis/poi/**'
   
-  push:
-    branches: [ master ]
-    paths:
-      - 'apis/poi/**'
-      - '.github/workflows/poi-ci.yml'
+ # push:
+ #   branches: [ master ]
+ #   paths:
+ #     - 'apis/poi/**'
+#      - '.github/workflows/poi-ci.yml'
           
 
 jobs:
