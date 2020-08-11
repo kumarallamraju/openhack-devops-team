@@ -37,6 +37,3 @@ steps:
     workingDirectory: 'apis/userprofile'
     failOnStderr: true
   displayName: 'Run Tests'
-Build and deploy JavaScript and Node.js apps - Azure Pipelines
-Build and test JavaScript and Node.js apps with Azure Pipelines
-
